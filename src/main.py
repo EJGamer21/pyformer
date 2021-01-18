@@ -2,7 +2,7 @@ import pygame as pg
 from entities.box import Box
 from entities.player import Player
 from game_manager import GameManager
-from config import colors
+from config.colors import *
 
 window_title = 'Main screen'
 game_manager = GameManager()
@@ -27,16 +27,16 @@ enemies: list[Box] = [
 
 
 while True:
-    screen.fill(colors.background['rgb'])
+    screen.fill(colors['background'])
 
     if player.is_alive() is False:
         game_manager.quit('Game Over!!')
 
-    pg.draw.rect(screen, colors.primary['rgb'], player)
-    pg.draw.rect(screen, colors.secondary['rgb'], obj)
+    pg.draw.rect(screen, colors['primary'], player)
+    pg.draw.rect(screen, colors['secondary'], obj)
 
     for enemy in enemies:
-        pg.draw.rect(screen, colors.secondary['rgb'], enemy)
+        pg.draw.rect(screen, colors['secondary'], enemy)
 
         if enemy.colliderect(player):
             enemy.attack(player)
