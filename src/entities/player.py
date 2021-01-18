@@ -25,17 +25,19 @@ class Player(pg.Rect):
         keys = pg.key.get_pressed()
 
         # vertical movement
-        if keys[pg.K_UP] == 1:
-            if self.momentum['y'] <= MAX_JUMP_HEIGHT * 2:
-                self.momentum['y'] += SPEED
-                self.centery -= SPEED
+        if (keys[pg.K_UP] == 1 and self.momentum['y'] <= MAX_JUMP_HEIGHT):
+                self.momentum['y'] += SPEED*GRAVITY
+                self.centery -= SPEED*GRAVITY
+
         if keys[pg.K_UP] == 0:
-            if self.momentum['y'] >= 0:
-                self.momentum['y'] -= SPEED
-                self.centery += SPEED
+            if self.momentum['y'] > 0.0:
+                self.momentum['y'] -= SPEED*GRAVITY
+                self.centery += SPEED*GRAVITY
+            if self.momentum['y'] < 0:
+                self.momentum['y'] = 0
 
         if keys[pg.K_DOWN]:
-            self.centery += SPEED
+            self.centery += SPEED + SPEED*GRAVITY
 
         # horizontal movement
         if keys[pg.K_LEFT]:
@@ -44,11 +46,12 @@ class Player(pg.Rect):
         if keys[pg.K_RIGHT]:
             self.centerx += SPEED
 
+    def recieve_damage(self, damage: float) -> float:
+        self.life -= damage
+        return self.life
+
     def has_collided(self, object) -> bool:
         return self.colliderect(object)
-
-    def recieve_damage(self, damage: float):
-        self.life -= damage
 
     def is_alive(self) -> bool:
         return self.life > 0.0
