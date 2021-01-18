@@ -1,31 +1,36 @@
-import pygame
+import pygame as pg
 import sys
 
 class GameManager():
     clock = None
 
     def __init__(self):
-        pygame.init()
+        pg.init()
 
-    def init_screen(self, title, screen_size) -> pygame.Surface:
-        pygame.display.set_caption(title)
-        self.clock = pygame.time.Clock()
+    def init_screen(self, title: str, size: tuple[int, int]) -> pg.Surface:
+        pg.display.set_caption(title)
+        self.clock = pg.time.Clock()
 
-        return pygame.display.set_mode(screen_size)
+        return pg.display.set_mode(size)
 
     def update_screen(self):
-        pygame.display.update()
+        pg.display.update()
 
-    def quit(self):
-        pygame.quit()
+    def quit(self, message: str = None):
+        print('Game has finished.')
+        if message is not None:
+            print('message:', message)
+
+        pg.quit()
         sys.exit()
 
-    def tick(self, fps):
+    def tick(self, fps: float):
         self.clock.tick(fps)
 
 
     def check_quit(self):
-        for event in pygame.event.get():
-            if (event.type == pygame.QUIT
-            or (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE)):
+        for event in pg.event.get():
+            if (event.type == pg.QUIT
+                or (event.type == pg.KEYUP
+                    and event.key == pg.K_ESCAPE)):
                 quit()
