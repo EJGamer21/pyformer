@@ -1,51 +1,39 @@
-import pygame as pg
-from entities.box import Box
+# --------- IMPORTS --------- #
+from constants import *
+
+from pygame import sprite
+from core.game import Game
+
 from entities.player import Player
-from game_manager import GameManager
-from config.colors import *
+from entities.platform import Platform
 
-window_title = 'Main screen'
-game_manager = GameManager()
+# --------------------------- #
 
-# ----------------------------------- #
-#  CONSTANTS
-# ----------------------------------- #
-SCREEN_SIZE=(980, 640)
-FPS = 30
+player_sprite = Player((WIDTH/2, HEIGHT/2), (10, 10))
+player = sprite.GroupSingle(player_sprite)
 
-# ----------------------------------- #
+platforms = sprite.Group(
+    Platform((0, 600), (WIDTH, 40))
+)
 
-screen = game_manager.init_screen(window_title, SCREEN_SIZE)
+all_sprites = sprite.Group(
+    player,
+    platforms
+)
 
-entities = []
-player = Player((SCREEN_SIZE[0]/2, SCREEN_SIZE[1]/2), (10, 10))
-obj = Player((player.x - 30, player.centery + 30), (100, 10))
+game = Game()
+while game.is_running:
+    # if player is not alive, is game over. End game.
+    if player.sprite.is_alive() is not True:
+        game.quit('Game Over!!')
 
-enemies: list[Box] = [
-    Box((player.centerx + 30, player.centery + 30), (20, 20))
-]
+    # fill the screen with background
+    game.screen.fill(COLORS['background'])
 
+    # draw all sprites onto screen
+    game.draw(all_sprites)
 
-while True:
-    screen.fill(colors['background'])
+    # Update game every game loop
+    game.update()
 
-    if player.is_alive() is False:
-        game_manager.quit('Game Over!!')
-
-    pg.draw.rect(screen, colors['primary'], player)
-    pg.draw.rect(screen, colors['secondary'], obj)
-
-    for enemy in enemies:
-        pg.draw.rect(screen, colors['secondary'], enemy)
-
-        if enemy.colliderect(player):
-            enemy.attack(player)
-
-    if player.has_collided(obj):
-        player.bottomleft = obj.topleft
-
-    player.update()
-
-    game_manager.update_screen()
-    game_manager.check_quit()
-    game_manager.tick(FPS)
+game.quit()
