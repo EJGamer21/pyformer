@@ -1,79 +1,94 @@
-import math, sys
 import pygame as pg
-from pygame import sprite
+from pygame import Vector2, sprite
 from constants import *
+from lib.functions import calculate_motion
 
 # ----------------------------------- #
 #  CONSTANTS
 # ----------------------------------- #
 SPEED = 10
 MAX_JUMP_HEIGHT = 50
+FRICTION = -0.10
 
 # ----------------------------------- #
 
 class Player(sprite.Sprite):
-    life: float = 10.0
-    speed: float = 3
+    health: float = 10.0
 
-    momentum = { 'x': 0, 'y': 0 }
+    velocity, acceleration = Vector2(0, 0), Vector2(0, GRAVITY)
     remaining_jumps = 1
+    is_jumping, is_on_ground = False, False
 
     def __init__(self, pos: tuple[int, int], size: tuple[int, int]):
         super().__init__()
+
+        self.position = Vector2(pos)
 
         self.image = pg.Surface(size)
         self.image.fill(COLORS['primary'])
 
         self.rect = self.image.get_rect()
-        self.rect.center = pos
+        self.rect.center = self.position
 
-    def update(self):
-        self.fall()
-        self.move_around()
+    def update(self, delta):
+        self.movement(delta)
 
-    def fall(self, speed: int = None):
-        _speed = (speed
-            if speed is not None
-            else SPEED)
+    def movement(self, delta):
+        self.limit_velocity(SPEED)
+        self.vertical_movement(delta)
+        self.horizontal_movement(delta)
 
-        self.rect.y += _speed + (_speed * GRAVITY)
+    def vertical_movement(self, delta):
+        self.velocity.y += self.acceleration.y * delta
 
-    def move_around(self):
-        # get active keys
+        if self.is_on_ground is False:
+            self.fall(delta)
+        else:
+            self.velocity.y = 0
+
+        self.rect.bottom = self.position.y
+
+    def jump(self):
+        if self.is_on_ground:
+            self.is_jumping = True
+            self.velocity.y -= SPEED
+            self.is_on_ground = False
+
+    def fall(self, delta):
+        self.position.y += calculate_motion(self, 'y', delta)
+
+    def horizontal_movement(self, delta):
         keys = pg.key.get_pressed()
 
-        # vertical movement
-        if keys[pg.K_UP] == 1 and self.remaining_jumps > 0:
-            jump_v = math.sqrt(2 * SPEED * abs(GRAVITY))
-            self.momentum['y'] -= SPEED + jump_v
-            self.rect.centery += self.momentum['y']
-
-            self.remaining_jumps = 0
-
-        elif keys[pg.K_UP] == 0 and self.remaining_jumps <= 0:
-            if self.momentum['y'] <= 0.0:
-                self.momentum['y'] += SPEED * GRAVITY
-                self.rect.centery -= self.momentum['y']
-            else:
-                self.remaining_jumps = 1
-                self.momentum['y'] = 0
-
-        if keys[pg.K_DOWN]:
-            self.rect.centery += SPEED + (SPEED * GRAVITY)
-
-        # horizontal movement
+        self.acceleration.x = 0
         if keys[pg.K_LEFT]:
-            self.rect.centerx -= SPEED * -0.12
-
+            self.acceleration.x -= 0.3
         if keys[pg.K_RIGHT]:
-            self.rect.centerx += SPEED * -0.12
+            self.acceleration.x += 0.3
+
+        self.acceleration.x += self.velocity.x * FRICTION
+
+        self.velocity.x += self.acceleration.x * delta
+        self.position.x += calculate_motion(self, 'x', delta)
+
+        self.rect.x = self.position.x
+
+    def limit_velocity(self, max_velocity):
+        min(-max_velocity, max(self.velocity.x, max_velocity))
+        min(-max_velocity, max(self.velocity.y, max_velocity))
+
+        if abs(self.velocity.x) < 0.1:
+            self.velocity.x = 0
+
+        if self.velocity.y > SPEED:
+            self.velocity.y = SPEED
 
     def recieve_damage(self, damage: float) -> float:
-        self.life -= damage
-        return self.life
+        self.health -= damage
+        return self.health
 
     def has_collided_with(self, object: sprite.Sprite) -> bool:
         return self.rect.colliderect(object)
 
     def is_alive(self) -> bool:
-        return self.life > 0.0
+        return self.health > 0.0

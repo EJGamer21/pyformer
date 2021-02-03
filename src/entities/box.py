@@ -13,4 +13,4 @@ class Box(pygame.Rect):
 
     def attack(self, enemy: Player):
         enemy.recieve_damage(self.damage)
-        print('attacking enemy, remaining life:', enemy.life)
+        print('attacking enemy, remaining life:', enemy.health)

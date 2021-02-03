@@ -4,6 +4,8 @@ from constants import *
 import sys
 
 class Game():
+    delta = 0.0
+
     def __init__(self):
         pg.init()
         pg.mixer.init()
@@ -15,16 +17,17 @@ class Game():
 
     # Main game loop
     def update(self):
+        self.delta = (self.clock.tick(FPS) * 0.0007) * FPS
+        pg.display.flip()
+
         if self.is_running is not True:
             self.quit('Game is not running anymore.')
 
         self.events()
-        pg.display.flip()
-        self.clock.tick(FPS)
 
     def draw(self, sprites: AbstractGroup):
         sprites.draw(self.screen)
-        sprites.update()
+        sprites.update(self.delta)
 
     def events(self):
         for event in pg.event.get():

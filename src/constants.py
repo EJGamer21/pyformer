@@ -1,5 +1,5 @@
 WIDTH, HEIGHT = 980, 640
-FPS = 30
+FPS = 60
 TITLE = 'Main screen'
 
 COLORS: dict[str, tuple[int, int, int]] = {
